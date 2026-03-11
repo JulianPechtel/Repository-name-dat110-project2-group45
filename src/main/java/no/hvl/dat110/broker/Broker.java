@@ -32,23 +32,29 @@ public class Broker extends Stopable {
 	@Override
 	public void doProcess() {
 					
-			Logger.log("Broker accept [" + maxaccept  + "]");
-			
-			Connection connection = server.accept();
-			
-			Logger.log("!" + maxaccept);
-			
-			waitConnect(connection);
+		Logger.log("Broker accept [" + maxaccept  + "]");
 		
-			if (stopable) {
+		Connection connection = server.accept();
+
+		// handle failed accept safely
+		if (connection == null) {
+			super.doStop();
+			return;
+		}
+		
+		Logger.log("!" + maxaccept);
+		
+		waitConnect(connection);
+	
+		if (stopable) {
+			
+			maxaccept--;
+			
+			if (maxaccept < 1) {
 				
-				maxaccept--;
-				
-				if (maxaccept < 1) {
-					
-					super.doStop();
-				}
+				super.doStop();
 			}
+		}
 	}
 	
 	private void waitConnect(Connection connection) {
